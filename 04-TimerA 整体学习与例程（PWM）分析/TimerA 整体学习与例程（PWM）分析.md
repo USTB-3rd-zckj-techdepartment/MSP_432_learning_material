@@ -19,78 +19,107 @@
             uint_fast16_t timerClear;
         } Timer_A_ContinuousModeConfig;
 
-    增计数模式
+增计数模式
+
 ![](./04.png)
-        typedef struct _Timer_A_UpModeConfig
+
+    typedef struct _Timer_A_UpModeConfig
+    {
+        uint_fast16_t clockSource;
+        uint_fast16_t clockSourceDivider;
+        uint_fast16_t timerPeriod;
+        uint_fast16_t timerInterruptEnable_TAIE;
+        uint_fast16_t captureCompareInterruptEnable_CCR0_CCIE;
+        uint_fast16_t timerClear;
+    } Timer_A_UpModeConfig;
+
+增减计数模式
+
+![](./05.png)
+
+    typedef struct _Timer_A_UpDownModeConfig
+    {
+        uint_fast16_t clockSource;
+        uint_fast16_t clockSourceDivider;
+        uint_fast16_t timerPeriod;
+        uint_fast16_t timerInterruptEnable_TAIE;
+        uint_fast16_t captureCompareInterruptEnable_CCR0_CCIE;
+        uint_fast16_t timerClear;
+    } Timer_A_UpDownModeConfig;
+
+比较模式
+
+
+![](./06.png)
+
+结构体配置
+
+    typedef struct _Timer_A_CompareModeConfig
+    {
+        uint_fast16_t compareRegister;
+        uint_fast16_t compareInterruptEnable;
+        uint_fast16_t compareOutputMode;
+        uint_fast16_t compareValue;
+    } Timer_A_CompareModeConfig;
+
+相关函数概览
+![](./07.png)
+
+捕获模式
+
+![](./08.png)
+
+    结构体配置
+
+    typedef struct _Timer_A_CaptureModeConfig
+    {
+        uint_fast16_t captureRegister;
+        uint_fast16_t captureMode;
+        uint_fast16_t captureInputSelect;
+        uint_fast16_t synchronizeCaptureSource;
+        uint_fast8_t captureInterruptEnable;
+        uint_fast16_t captureOutputMode;
+    } Timer_A_CaptureModeConfig;
+
+![](./09.png)
+
+PWM输出模式
+
+结构体配置
+
+![](./10.png)
+
+
+
+        typedef struct _Timer_A_PWMConfig
         {
             uint_fast16_t clockSource;
             uint_fast16_t clockSourceDivider;
             uint_fast16_t timerPeriod;
-            uint_fast16_t timerInterruptEnable_TAIE;
-            uint_fast16_t captureCompareInterruptEnable_CCR0_CCIE;
-            uint_fast16_t timerClear;
-        } Timer_A_UpModeConfig;
-
-    增减计数模式
-        typedef struct _Timer_A_UpDownModeConfig
-        {
-            uint_fast16_t clockSource;
-            uint_fast16_t clockSourceDivider;
-            uint_fast16_t timerPeriod;
-            uint_fast16_t timerInterruptEnable_TAIE;
-            uint_fast16_t captureCompareInterruptEnable_CCR0_CCIE;
-            uint_fast16_t timerClear;
-        } Timer_A_UpDownModeConfig;
-
-    比较模式
-        结构体配置
-        typedef struct _Timer_A_CompareModeConfig
-        {
             uint_fast16_t compareRegister;
-            uint_fast16_t compareInterruptEnable;
             uint_fast16_t compareOutputMode;
-            uint_fast16_t compareValue;
-        } Timer_A_CompareModeConfig;
-        相关函数概览
+            uint_fast16_t dutyCycle;
+        } Timer_A_PWMConfig;
 
 
-    捕获模式
-        结构体配置
-        typedef struct _Timer_A_CaptureModeConfig
-        {
-            uint_fast16_t captureRegister;
-            uint_fast16_t captureMode;
-            uint_fast16_t captureInputSelect;
-            uint_fast16_t synchronizeCaptureSource;
-            uint_fast8_t captureInterruptEnable;
-            uint_fast16_t captureOutputMode;
-        } Timer_A_CaptureModeConfig;
+中断相关函数SDK库
 
-    PWM输出模式
-        结构体配置
-            typedef struct _Timer_A_PWMConfig
-            {
-                uint_fast16_t clockSource;
-                uint_fast16_t clockSourceDivider;
-                uint_fast16_t timerPeriod;
-                uint_fast16_t compareRegister;
-                uint_fast16_t compareOutputMode;
-                uint_fast16_t dutyCycle;
-            } Timer_A_PWMConfig;
+![](./11.png)
 
+### 三种计数模式的配置与工作
 
-    中断相关
+### 注意，先配置，配置好了还需要*启动工作*，才能干活儿，如图所示
 
+![](./12.png)
 
-三种计数模式的配置与工作
-    注意，先配置，配置好了还需要启动工作，才能干活儿，如图所示
-
-实战例程分析-直接调用库函数产生波形（PWM模式）
+## 实战例程分析-直接调用库函数产生波形（PWM模式）
     首先做一个数据计算
         由后文可知，我们设置的时钟是64kHz，也就是一秒运转64k下，于是，我们的时间周期设置为32000，也就是0.5s一个，所以波形周期是2Hz。在时钟周期给定的情况，比如64hz，那么，timeperiod的值就是64000除以我们需要的Hz。比如，我们要测量并输出1000Hz的方波，那timeperiod=64 关于时钟，可以参考​时钟配置概览​ 
 
-    鉴于篇幅，只讲述核心代码
-        首先是结构体的配置，我们配置2个PWM结构体变量，做双路PWM波形输出
+鉴于篇幅，只讲述核心代码（若想看完整的代码介绍，可以参考05-ADC精析）
+
+首先是结构体的配置，我们配置2个PWM结构体变量，做双路PWM波形输出
+
             Timer_A_PWMConfig pwmConfig =
             {
                     TIMER_A_CLOCKSOURCE_SMCLK,
@@ -100,7 +129,9 @@
                     TIMER_A_OUTPUTMODE_RESET_SET,
                     3200
             };
-            第二个
+
+第二个
+
                 Timer_A_PWMConfig pwm_2_Config =
                 {
                         TIMER_A_CLOCKSOURCE_SMCLK,
@@ -111,6 +142,7 @@
                         3200
                 };
 
+其他配置这里不做翻译，如果您基础不足，可以先看**05-ADC精析**那里我对TI官方例程的每一句话都进行了翻译处理
 
         //![Simple Timer_A Example] /* Setting MCLK to REFO at 128Khz for LF mode Setting SMCLK to 64Khz */
                 MAP_CS_setReferenceOscillatorFrequency(CS_REFO_128KHZ);
@@ -137,8 +169,11 @@
 
 
         /* Port1 ISR - This ISR will progressively step up the duty cycle of the PWM on a button press*/
-            因为我们的按键是GPIO_PORT_P1,GPIO_PIN1,即P1.1，所以如下中断
-            中断配置
+
+因为我们的按键是GPIO_PORT_P1,GPIO_PIN1,即P1.1，所以如下中断
+
+中断配置
+
                 void PORT1_IRQHandler(void)
                 {
                     uint32_t status = MAP_GPIO_getEnabledInterruptStatus(GPIO_PORT_P1);
@@ -161,14 +196,19 @@
 
 
 
-    稍加改变，即可实现基于A0的四路P波输出
-        四路P波输出完整代码存放处（内容较大，拷贝建议在官方例程的main里进行覆盖）
-            基于官方例程的4路同等P波输出
-                注意 需要魔法上网 (VPN)
+稍加改变，即可实现基于A0的四路P波输出
+
+
+基于官方例程的4路同等P波输出链接如下，使用的是谷歌的onedrive
+
+<https://docs.google.com/document/d/139AB2fA4VMILG-_xgHP-Of8HEI_ZbGE7/edit?usp=drive_link&ouid=115107867623974342857&rtpof=true&sd=true>
+
+**注意 需要魔法上网 (VPN)**
 
 
 
-    我们进一步，用按键设置频率巡回递减
+我们进一步，用按键设置频率巡回递减
+
         void PORT1_IRQHandler(void)
         {
             uint32_t status = MAP_GPIO_getEnabledInterruptStatus(GPIO_PORT_P1);
@@ -195,7 +235,8 @@
             }
         }
 
-    增加一段
+增加一段
+
         if (status & GPIO_PIN4)
                 {
                     if(pwmConfig.dutyCycle == 0)
@@ -217,7 +258,8 @@
                     MAP_Timer_A_generatePWM(TIMER_A0_BASE, &pwm_4_Config);
                 }
 
-    然后初始化按键  增加GPIO_PIN4 即可
+然后初始化按键  增加GPIO_PIN4 即可
+
         //button configuration
         MAP_GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P1, GPIO_PIN1+GPIO_PIN4);
         MAP_GPIO_clearInterruptFlag(GPIO_PORT_P1, GPIO_PIN1+GPIO_PIN4);
@@ -225,3 +267,16 @@
 
 
 至此，我们实现了TimerA0 的四路PWM输出控制 6.8 实测可行
+
+后期用另一种方法也实现了4路pwm波形输出，用的是TA1，另一个时钟
+之后我想做一个综合这两个方法的8路PWM可控频率输出
+
+    以上是在画饼~~
+
+但pwm输出是真的诶
+
+
+![](微信图片_20230612080812.jpg)
+![](微信图片_20230612080753.jpg)
+
+
